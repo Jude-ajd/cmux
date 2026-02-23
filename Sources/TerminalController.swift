@@ -719,6 +719,12 @@ class TerminalController {
         case "clear_agent_status":
             return clearAgentStatus(args)
 
+        case "show_agent_dashboard":
+            DispatchQueue.main.async {
+                NotificationCenter.default.post(name: .agentDashboardRequested, object: NSApp.keyWindow ?? NSApp.mainWindow)
+            }
+            return "OK"
+
         case "log":
             return appendLog(args)
 
