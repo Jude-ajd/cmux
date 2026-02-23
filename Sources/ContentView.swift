@@ -1114,6 +1114,7 @@ struct ContentView: View {
     @State private var isResizerBandActive = false
     @State private var isSidebarResizerCursorActive = false
     @State private var sidebarResizerCursorStabilizer: DispatchSourceTimer?
+    @State private var isAgentDashboardPresented = false
     @State private var isCommandPalettePresented = false
     @State private var commandPaletteQuery: String = ""
     @State private var commandPaletteMode: CommandPaletteMode = .commands
@@ -2068,6 +2069,25 @@ struct ContentView: View {
                 overlayController.update(rootView: AnyView(commandPaletteOverlay), isVisible: isCommandPalettePresented)
             }
         }))
+
+        view = AnyView(view.onReceive(NotificationCenter.default.publisher(for: .agentDashboardRequested)) { notification in
+            let requestedWindow = notification.object as? NSWindow
+            guard Self.shouldHandleCommandPaletteRequest(
+                observedWindow: observedWindow,
+                requestedWindow: requestedWindow,
+                keyWindow: NSApp.keyWindow,
+                mainWindow: NSApp.mainWindow
+            ) else { return }
+            isAgentDashboardPresented.toggle()
+        })
+
+        view = AnyView(view.overlay {
+            if isAgentDashboardPresented {
+                AgentDashboardOverlay(isPresented: $isAgentDashboardPresented)
+                    .environmentObject(tabManager)
+                    .transition(.opacity.combined(with: .scale(scale: 0.97)))
+            }
+        }.animation(.easeOut(duration: 0.15), value: isAgentDashboardPresented))
 
         view = AnyView(view.onChange(of: bgGlassTintHex) { _ in
             updateWindowGlassTint()
@@ -6583,7 +6603,7 @@ private struct SidebarStatusPillsRow: View {
 
 // MARK: - Agent Status Badge
 
-private struct AgentStatusBadge: View {
+struct AgentStatusBadge: View {
     let status: AgentStatus
     let isActive: Bool
 

@@ -3082,6 +3082,7 @@ enum ResizeDirection {
 }
 
 extension Notification.Name {
+    static let agentDashboardRequested = Notification.Name("cmux.agentDashboardRequested")
     static let commandPaletteToggleRequested = Notification.Name("cmux.commandPaletteToggleRequested")
     static let commandPaletteRequested = Notification.Name("cmux.commandPaletteRequested")
     static let commandPaletteSwitcherRequested = Notification.Name("cmux.commandPaletteSwitcherRequested")

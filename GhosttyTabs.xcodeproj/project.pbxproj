@@ -31,6 +31,8 @@
 		A5001406 /* Workspace.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5001416 /* Workspace.swift */; };
 		AGENT001BUILD000 /* AgentStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = AGENT001FILE0000 /* AgentStatus.swift */; };
 		AGENT002BUILD000 /* AgentStatusTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AGENT002FILE0000 /* AgentStatusTests.swift */; };
+		AGENT003BUILD000 /* AgentDashboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AGENT003FILE0000 /* AgentDashboard.swift */; };
+		AGENT004BUILD000 /* AgentDashboardEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = AGENT004FILE0000 /* AgentDashboardEntry.swift */; };
 		A5001407 /* WorkspaceContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5001417 /* WorkspaceContentView.swift */; };
 			A5001093 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5001090 /* AppDelegate.swift */; };
 			A5001094 /* NotificationsPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5001091 /* NotificationsPage.swift */; };
@@ -161,6 +163,8 @@
 		A5001416 /* Workspace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Workspace.swift; sourceTree = "<group>"; };
 		AGENT001FILE0000 /* AgentStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentStatus.swift; sourceTree = "<group>"; };
 		AGENT002FILE0000 /* AgentStatusTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentStatusTests.swift; sourceTree = "<group>"; };
+		AGENT003FILE0000 /* AgentDashboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentDashboard.swift; sourceTree = "<group>"; };
+		AGENT004FILE0000 /* AgentDashboardEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentDashboardEntry.swift; sourceTree = "<group>"; };
 		A5001417 /* WorkspaceContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkspaceContentView.swift; sourceTree = "<group>"; };
 		A5001090 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		A5001091 /* NotificationsPage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationsPage.swift; sourceTree = "<group>"; };
@@ -319,6 +323,8 @@
 					A5001520 /* PostHogAnalytics.swift */,
 					A5001416 /* Workspace.swift */,
 				AGENT001FILE0000 /* AgentStatus.swift */,
+				AGENT003FILE0000 /* AgentDashboard.swift */,
+				AGENT004FILE0000 /* AgentDashboardEntry.swift */,
 				A5001417 /* WorkspaceContentView.swift */,
 				A5001014 /* GhosttyConfig.swift */,
 				A5001015 /* GhosttyTerminalView.swift */,
@@ -550,6 +556,8 @@
 						A5001521 /* PostHogAnalytics.swift in Sources */,
 						A5001406 /* Workspace.swift in Sources */,
 				AGENT001BUILD000 /* AgentStatus.swift in Sources */,
+				AGENT003BUILD000 /* AgentDashboard.swift in Sources */,
+				AGENT004BUILD000 /* AgentDashboardEntry.swift in Sources */,
 				A5001407 /* WorkspaceContentView.swift in Sources */,
 				A5001004 /* GhosttyConfig.swift in Sources */,
 				A5001005 /* GhosttyTerminalView.swift in Sources */,
