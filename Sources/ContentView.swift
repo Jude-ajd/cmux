@@ -979,12 +979,12 @@ private func commandPaletteWindowOverlayController(for window: NSWindow) -> Wind
 
 // MARK: - Agent Dashboard window overlay (renders above Ghostty NSView layers)
 
-private var agentDashboardWindowOverlayKey: UInt8 = 0
+var agentDashboardWindowOverlayKey: UInt8 = 0
 
 @MainActor
-private final class WindowAgentDashboardOverlayController: NSObject {
+final class WindowAgentDashboardOverlayController: NSObject {
     private weak var window: NSWindow?
-    private let containerView: NSView = {
+    let containerView: NSView = {
         let v = NSView(frame: .zero)
         v.translatesAutoresizingMaskIntoConstraints = false
         v.wantsLayer = true
@@ -1049,7 +1049,7 @@ private final class WindowAgentDashboardOverlayController: NSObject {
 }
 
 @MainActor
-private func agentDashboardWindowOverlayController(for window: NSWindow) -> WindowAgentDashboardOverlayController {
+func agentDashboardWindowOverlayController(for window: NSWindow) -> WindowAgentDashboardOverlayController {
     if let existing = objc_getAssociatedObject(window, &agentDashboardWindowOverlayKey) as? WindowAgentDashboardOverlayController {
         return existing
     }
