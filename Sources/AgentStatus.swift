@@ -37,11 +37,30 @@ enum AgentStatus: String, Equatable {
         }
     }
 
+    /// Human-readable label shown in the sidebar badge.
+    var displayLabel: String { rawValue }
+
+    /// Whether the badge should show a pulsing animation (only while running).
+    var isAnimating: Bool { self == .running }
+
     // MARK: - Dedup
 
     /// Returns true only when the status actually changes, preventing no-op UI updates.
     static func shouldReplace(current: AgentStatus?, next: AgentStatus) -> Bool {
         current != next
+    }
+
+    // MARK: - SidebarStatusEntry helpers
+
+    /// Extracts AgentStatus from a statusEntries dictionary, or nil if absent/unrecognized.
+    static func extract(from entries: [String: SidebarStatusEntry]) -> AgentStatus? {
+        guard let entry = entries["agent"] else { return nil }
+        return AgentStatus.parse(entry.value)
+    }
+
+    /// Returns all entries except the "agent" key (so the generic pill row skips it).
+    static func nonAgentEntries(from entries: [String: SidebarStatusEntry]) -> [String: SidebarStatusEntry] {
+        entries.filter { $0.key != "agent" }
     }
 
     // MARK: - SidebarStatusEntry conversion
