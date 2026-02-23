@@ -6639,19 +6639,6 @@ private struct AgentStatusBadge: View {
     }
 }
 
-private extension Color {
-    init?(hex: String) {
-        var s = hex.trimmingCharacters(in: .whitespaces)
-        if s.hasPrefix("#") { s = String(s.dropFirst()) }
-        guard s.count == 6, let val = UInt64(s, radix: 16) else { return nil }
-        self.init(
-            red:   Double((val >> 16) & 0xFF) / 255,
-            green: Double((val >>  8) & 0xFF) / 255,
-            blue:  Double( val        & 0xFF) / 255
-        )
-    }
-}
-
 enum SidebarDropEdge {
     case top
     case bottom
