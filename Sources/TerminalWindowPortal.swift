@@ -605,6 +605,13 @@ final class WindowTerminalPortal: NSObject {
             container.addSubview(overlay, positioned: .above, relativeTo: hostView)
         }
 
+        // Keep the AgentDashboard overlay at the very top of the portal container.
+        if let controller = objc_getAssociatedObject(window, &agentDashboardWindowOverlayKey) as? WindowAgentDashboardOverlayController,
+           controller.containerView.superview === container,
+           container.subviews.last !== controller.containerView {
+            container.addSubview(controller.containerView, positioned: .above, relativeTo: nil)
+        }
+
         ensureDividerOverlayOnTop()
 
         return true

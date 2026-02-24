@@ -977,6 +977,87 @@ private func commandPaletteWindowOverlayController(for window: NSWindow) -> Wind
     return controller
 }
 
+// MARK: - Agent Dashboard window overlay (renders above Ghostty NSView layers)
+
+var agentDashboardWindowOverlayKey: UInt8 = 0
+
+@MainActor
+final class WindowAgentDashboardOverlayController: NSObject {
+    private weak var window: NSWindow?
+    let containerView: NSView = {
+        let v = NSView(frame: .zero)
+        v.translatesAutoresizingMaskIntoConstraints = false
+        v.wantsLayer = true
+        v.layer?.backgroundColor = NSColor.clear.cgColor
+        v.isHidden = true
+        return v
+    }()
+    private let hostingView = NSHostingView(rootView: AnyView(EmptyView()))
+    private var installConstraints: [NSLayoutConstraint] = []
+
+    init(window: NSWindow) {
+        self.window = window
+        super.init()
+        hostingView.translatesAutoresizingMaskIntoConstraints = false
+        hostingView.wantsLayer = true
+        hostingView.layer?.backgroundColor = NSColor.clear.cgColor
+        containerView.addSubview(hostingView)
+        NSLayoutConstraint.activate([
+            hostingView.topAnchor.constraint(equalTo: containerView.topAnchor),
+            hostingView.bottomAnchor.constraint(equalTo: containerView.bottomAnchor),
+            hostingView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor),
+            hostingView.trailingAnchor.constraint(equalTo: containerView.trailingAnchor),
+        ])
+        ensureInstalled()
+    }
+
+    private func ensureInstalled() {
+        guard let window,
+              let contentView = window.contentView,
+              let themeFrame = contentView.superview else { return }
+
+        if containerView.superview !== themeFrame {
+            NSLayoutConstraint.deactivate(installConstraints)
+            installConstraints.removeAll()
+            containerView.removeFromSuperview()
+            themeFrame.addSubview(containerView, positioned: .above, relativeTo: nil)
+            installConstraints = [
+                containerView.topAnchor.constraint(equalTo: contentView.topAnchor),
+                containerView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
+                containerView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+                containerView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+            ]
+            NSLayoutConstraint.activate(installConstraints)
+        } else if themeFrame.subviews.last !== containerView {
+            themeFrame.addSubview(containerView, positioned: .above, relativeTo: nil)
+        }
+    }
+
+    func update(rootView: AnyView, isVisible: Bool) {
+        ensureInstalled()
+        if isVisible {
+            hostingView.rootView = rootView
+            containerView.isHidden = false
+            if let themeFrame = containerView.superview, themeFrame.subviews.last !== containerView {
+                themeFrame.addSubview(containerView, positioned: .above, relativeTo: nil)
+            }
+        } else {
+            hostingView.rootView = AnyView(EmptyView())
+            containerView.isHidden = true
+        }
+    }
+}
+
+@MainActor
+func agentDashboardWindowOverlayController(for window: NSWindow) -> WindowAgentDashboardOverlayController {
+    if let existing = objc_getAssociatedObject(window, &agentDashboardWindowOverlayKey) as? WindowAgentDashboardOverlayController {
+        return existing
+    }
+    let controller = WindowAgentDashboardOverlayController(window: window)
+    objc_setAssociatedObject(window, &agentDashboardWindowOverlayKey, controller, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+    return controller
+}
+
 private struct CommandPaletteRowFramePreferenceKey: PreferenceKey {
     static var defaultValue: [Int: CGRect] = [:]
 
@@ -1114,6 +1195,7 @@ struct ContentView: View {
     @State private var isResizerBandActive = false
     @State private var isSidebarResizerCursorActive = false
     @State private var sidebarResizerCursorStabilizer: DispatchSourceTimer?
+    @State private var isAgentDashboardPresented = false
     @State private var isCommandPalettePresented = false
     @State private var commandPaletteQuery: String = ""
     @State private var commandPaletteMode: CommandPaletteMode = .commands
@@ -2073,6 +2155,32 @@ struct ContentView: View {
             MainActor.assumeIsolated {
                 let overlayController = commandPaletteWindowOverlayController(for: window)
                 overlayController.update(rootView: AnyView(commandPaletteOverlay), isVisible: isCommandPalettePresented)
+            }
+        }))
+
+        view = AnyView(view.onReceive(NotificationCenter.default.publisher(for: .agentDashboardRequested)) { notification in
+            let requestedWindow = notification.object as? NSWindow
+            guard Self.shouldHandleCommandPaletteRequest(
+                observedWindow: observedWindow,
+                requestedWindow: requestedWindow,
+                keyWindow: NSApp.keyWindow,
+                mainWindow: NSApp.mainWindow
+            ) else { return }
+            isAgentDashboardPresented.toggle()
+        })
+
+        view = AnyView(view.background(WindowAccessor(dedupeByWindow: false) { window in
+            MainActor.assumeIsolated {
+                let overlayController = agentDashboardWindowOverlayController(for: window)
+                let dashboardView = AnyView(
+                    Group {
+                        if isAgentDashboardPresented {
+                            AgentDashboardOverlay(isPresented: $isAgentDashboardPresented)
+                                .environmentObject(tabManager)
+                        }
+                    }
+                )
+                overlayController.update(rootView: dashboardView, isVisible: isAgentDashboardPresented)
             }
         }))
 
@@ -6729,7 +6837,7 @@ private struct SidebarStatusPillsRow: View {
 
 // MARK: - Agent Status Badge
 
-private struct AgentStatusBadge: View {
+struct AgentStatusBadge: View {
     let status: AgentStatus
     let isActive: Bool
 

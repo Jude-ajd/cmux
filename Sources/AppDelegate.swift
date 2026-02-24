@@ -2144,6 +2144,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
             return true
         }
 
+        // Cmd+Shift+A — Agent Dashboard
+        let isAgentDashboard = normalizedFlags == [.command, .shift]
+            && (chars == "a" || chars == "A" || event.keyCode == 0)
+        if isAgentDashboard {
+            let targetWindow = event.window ?? NSApp.keyWindow ?? NSApp.mainWindow
+            NotificationCenter.default.post(name: .agentDashboardRequested, object: targetWindow)
+            return true
+        }
+
         if normalizedFlags == [.command], chars == "q" {
             return handleQuitShortcutWarning()
         }

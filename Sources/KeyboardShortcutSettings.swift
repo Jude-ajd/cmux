@@ -12,6 +12,7 @@ enum KeyboardShortcutSettings {
         case showNotifications
         case jumpToUnread
         case triggerFlash
+        case showAgentDashboard
 
         // Navigation
         case nextSurface
@@ -49,6 +50,7 @@ enum KeyboardShortcutSettings {
             case .showNotifications: return "Show Notifications"
             case .jumpToUnread: return "Jump to Latest Unread"
             case .triggerFlash: return "Flash Focused Panel"
+            case .showAgentDashboard: return "Show Agent Dashboard"
             case .nextSurface: return "Next Surface"
             case .prevSurface: return "Previous Surface"
             case .nextSidebarTab: return "Next Workspace"
@@ -80,6 +82,7 @@ enum KeyboardShortcutSettings {
             case .showNotifications: return "shortcut.showNotifications"
             case .jumpToUnread: return "shortcut.jumpToUnread"
             case .triggerFlash: return "shortcut.triggerFlash"
+            case .showAgentDashboard: return "shortcut.showAgentDashboard"
             case .nextSidebarTab: return "shortcut.nextSidebarTab"
             case .prevSidebarTab: return "shortcut.prevSidebarTab"
             case .renameTab: return "shortcut.renameTab"
@@ -118,6 +121,8 @@ enum KeyboardShortcutSettings {
                 return StoredShortcut(key: "u", command: true, shift: true, option: false, control: false)
             case .triggerFlash:
                 return StoredShortcut(key: "h", command: true, shift: true, option: false, control: false)
+            case .showAgentDashboard:
+                return StoredShortcut(key: "a", command: true, shift: true, option: false, control: false)
             case .nextSidebarTab:
                 return StoredShortcut(key: "]", command: true, shift: false, option: false, control: true)
             case .prevSidebarTab:
