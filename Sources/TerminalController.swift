@@ -713,6 +713,12 @@ class TerminalController {
         case "list_status":
             return listStatus(args)
 
+        case "set_agent_status":
+            return setAgentStatus(args)
+
+        case "clear_agent_status":
+            return clearAgentStatus(args)
+
         case "log":
             return appendLog(args)
 
@@ -11207,6 +11213,38 @@ class TerminalController {
                 return line
             }
             result = lines.joined(separator: "\n")
+        }
+        return result
+    }
+
+    private func setAgentStatus(_ args: String) -> String {
+        let parsed = parseOptionsNoStop(args)
+        guard let rawStatus = parsed.positional.first else {
+            return "ERROR: Missing status — usage: set_agent_status <running|waiting|done|error> [--tab=X]"
+        }
+        guard let status = AgentStatus.parse(rawStatus) else {
+            return "ERROR: Unknown agent status '\(rawStatus)' — valid values: running, waiting, done, error"
+        }
+
+        var result = "OK"
+        DispatchQueue.main.async {
+            guard let tab = self.resolveTabForReport(args) else { return }
+            guard AgentStatus.shouldReplace(
+                current: AgentStatus.parse(tab.statusEntries["agent"]?.value ?? ""),
+                next: status
+            ) else { return }
+            tab.statusEntries["agent"] = status.asSidebarStatusEntry()
+        }
+        return result
+    }
+
+    private func clearAgentStatus(_ args: String) -> String {
+        var result = "OK"
+        DispatchQueue.main.async {
+            guard let tab = self.resolveTabForReport(args) else { return }
+            if tab.statusEntries.removeValue(forKey: "agent") == nil {
+                result = "OK (no agent status set)"
+            }
         }
         return result
     }

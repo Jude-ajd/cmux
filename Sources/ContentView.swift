@@ -5942,16 +5942,27 @@ private struct TabItemView: View {
                     .multilineTextAlignment(.leading)
             }
 
-            if sidebarShowStatusPills, !tab.statusEntries.isEmpty {
-                SidebarStatusPillsRow(
-                    entries: tab.statusEntries.values.sorted(by: { (lhs, rhs) in
-                        if lhs.timestamp != rhs.timestamp { return lhs.timestamp > rhs.timestamp }
-                        return lhs.key < rhs.key
-                    }),
-                    isActive: usesInvertedActiveForeground,
-                    onFocus: { updateSelection() }
-                )
-                .transition(.opacity.combined(with: .move(edge: .top)))
+            // Agent status badge (dedicated indicator, separate from generic pills)
+            if let agentStatus = AgentStatus.extract(from: tab.statusEntries) {
+                AgentStatusBadge(status: agentStatus, isActive: usesInvertedActiveForeground)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .transition(.opacity.combined(with: .move(edge: .top)))
+            }
+
+            // Generic status pills (agent key excluded to avoid duplication)
+            if sidebarShowStatusPills {
+                let nonAgentEntries = AgentStatus.nonAgentEntries(from: tab.statusEntries)
+                if !nonAgentEntries.isEmpty {
+                    SidebarStatusPillsRow(
+                        entries: nonAgentEntries.values.sorted(by: { (lhs, rhs) in
+                            if lhs.timestamp != rhs.timestamp { return lhs.timestamp > rhs.timestamp }
+                            return lhs.key < rhs.key
+                        }),
+                        isActive: usesInvertedActiveForeground,
+                        onFocus: { updateSelection() }
+                    )
+                    .transition(.opacity.combined(with: .move(edge: .top)))
+                }
             }
 
             // Latest log entry
@@ -6713,6 +6724,64 @@ private struct SidebarStatusPillsRow: View {
 
     private var shouldShowToggle: Bool {
         entries.count > 1 || statusText.count > 120
+    }
+}
+
+// MARK: - Agent Status Badge
+
+private struct AgentStatusBadge: View {
+    let status: AgentStatus
+    let isActive: Bool
+
+    @State private var isPulsing = false
+
+    var body: some View {
+        HStack(spacing: 4) {
+            // Animated dot for running, static for others
+            Circle()
+                .fill(dotColor)
+                .frame(width: 6, height: 6)
+                .opacity(isPulsing ? 0.4 : 1.0)
+                .animation(
+                    status.isAnimating
+                        ? .easeInOut(duration: 0.9).repeatForever(autoreverses: true)
+                        : .default,
+                    value: isPulsing
+                )
+                .onAppear { if status.isAnimating { isPulsing = true } }
+                .onChange(of: status) { _, next in isPulsing = next.isAnimating }
+
+            Image(systemName: status.displayIcon)
+                .font(.system(size: 9, weight: .medium))
+                .foregroundColor(iconColor)
+
+            Text(status.displayLabel)
+                .font(.system(size: 10))
+                .foregroundColor(labelColor)
+                .lineLimit(1)
+        }
+        .padding(.horizontal, 5)
+        .padding(.vertical, 2)
+        .background(badgeBackground)
+        .clipShape(Capsule())
+    }
+
+    private var resolvedColor: Color {
+        switch status {
+        case .running: return Color(hex: "#3b82f6") ?? .blue
+        case .waiting: return Color(hex: "#f59e0b") ?? .orange
+        case .done:    return Color(hex: "#22c55e") ?? .green
+        case .error:   return Color(hex: "#ef4444") ?? .red
+        }
+    }
+
+    private var dotColor: Color { resolvedColor }
+    private var iconColor: Color { isActive ? resolvedColor.opacity(0.9) : resolvedColor }
+    private var labelColor: Color { isActive ? .white.opacity(0.85) : .primary.opacity(0.75) }
+    private var badgeBackground: Color {
+        isActive
+            ? resolvedColor.opacity(0.25)
+            : resolvedColor.opacity(0.12)
     }
 }
 
